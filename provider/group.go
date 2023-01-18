@@ -39,10 +39,16 @@ func (p *providerGroup) Fetch(done chan int) <-chan proxy.Proxy {
 }
 
 func Group(providers ...ProxyProvider) ProxyProvider {
-	if len(providers) == 0 {
+	notNilProviders := make([]ProxyProvider, 0, len(providers))
+	for _, item := range providers {
+		if item != nil {
+			notNilProviders = append(notNilProviders, item)
+		}
+	}
+	if len(notNilProviders) == 0 {
 		return nil
 	}
 	return &providerGroup{
-		providers,
+		notNilProviders,
 	}
 }
