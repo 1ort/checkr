@@ -52,7 +52,6 @@ func (c *checkerPool) Run(in <-chan proxy.Proxy) <-chan proxy.Proxy {
 			for p := range c.in {
 				c.check(p)
 			}
-			// log.Println("checker: in channel closed")
 			wg.Done()
 		}()
 	}
@@ -65,12 +64,6 @@ func (c *checkerPool) Run(in <-chan proxy.Proxy) <-chan proxy.Proxy {
 
 	return out
 }
-
-// func (c *checkerPool) worker() {
-// 	for p := range c.in {
-// 		c.check(p)
-// 	}
-// }
 
 func (c *checkerPool) check(p proxy.Proxy) {
 	if p.Type == proxy.TypeUnknown {
@@ -94,7 +87,6 @@ func (c *checkerPool) checkTyped(p proxy.Proxy) {
 	if err != nil {
 		p.IsAlive = false
 		c.out <- p
-		// log.Printf("Create transport: %v", err)
 		return //TODO: output err
 	}
 	client := &http.Client{
@@ -105,7 +97,6 @@ func (c *checkerPool) checkTyped(p proxy.Proxy) {
 	if err != nil {
 		p.IsAlive = false
 		c.out <- p
-		// log.Printf("Request: %v", err)
 		return //TODO: output err
 	}
 	defer response.Body.Close()
