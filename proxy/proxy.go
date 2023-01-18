@@ -18,7 +18,7 @@ const (
 	// TypeSMTP
 )
 
-var PossibleTypes = []ProxyType{TypeHTTP, TypeSOCKS4, TypeSOCKS4A, TypeSOCKS5}
+var PossibleTypes = []ProxyType{TypeHTTP, TypeSOCKS4, TypeSOCKS5}
 
 type Proxy struct {
 	Host    string
