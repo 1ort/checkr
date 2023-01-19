@@ -3,6 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
+	"os"
 	"strings"
 	"time"
 
@@ -10,6 +12,7 @@ import (
 	"github.com/1ort/checkr/counter"
 	"github.com/1ort/checkr/filter"
 	"github.com/1ort/checkr/provider"
+	"github.com/1ort/checkr/proxy"
 )
 
 var defaultUrls = []string{
@@ -43,25 +46,21 @@ func (i *arrayFlags) Set(value string) error {
 var (
 	inputFiles arrayFlags
 	inputUrls  arrayFlags
-	// outputFile string
-	noCheck bool
-	// silent     bool
-	limit     int
-	workers   int
-	proxyType string
-	timeout   int
+	outputFile string
+	noCheck    bool
+	silent     bool
+	workers    int
+	proxyType  string
+	timeout    int
 )
 
-var collected int
-
 func main() {
-	flag.Var(&inputFiles, "file", "Proxy list file. You can specify multiple (--file 1.txt --file 2.txt ... --file n.txt)")
-	flag.Var(&inputUrls, "url", "Proxy list url You can specify multiple")
-	// flag.StringVar(&outputFile, "o", "", "Output file")
+	flag.Var(&inputFiles, "file", "Proxy list file. You can specify multiple (-file 1.txt -file 2.txt ... -file n.txt)")
+	flag.Var(&inputUrls, "url", "Proxy list url. You can specify multiple (-url a.com -url b.com ... --url n.com)")
+	flag.StringVar(&outputFile, "o", "", "Output file")
 	flag.BoolVar(&noCheck, "nocheck", false, "Do not check proxy")
-	flag.IntVar(&limit, "limit", 0, "Limit proxies. 0 = no limit")
 	flag.StringVar(&proxyType, "type", "all", "Type of proxy needed. [all/http/socks4/socks5] Doesn't work with --nocheck")
-	// flag.BoolVar(&silent, "silent", false, "Enable silent mode")
+	flag.BoolVar(&silent, "silent", false, "Enable silent mode")
 	flag.IntVar(&timeout, "timeout", 10, "Check timeout in seconds")
 	flag.IntVar(&workers, "workers", 500, "Number of parallel checkers")
 	flag.Parse()
@@ -89,7 +88,19 @@ func main() {
 	done := make(chan int)
 	defer close(done)
 	out := p.Fetch(done)
-	out = counter.NewProxyCounter("Found", out, 10*time.Second)
+
+	foundCounter := counter.NewProxyCounter("Found")
+	overallCounter := &foundCounter
+	if !silent {
+		go func() {
+			for {
+				time.Sleep(5 * time.Second)
+				foundCounter.Print()
+			}
+		}()
+	}
+
+	out = foundCounter.Run(out)
 	if !noCheck {
 		checker := check.NewCheckerPool(
 			time.Duration(timeout)*time.Second,
@@ -98,15 +109,57 @@ func main() {
 		)
 		out = checker.Run(out)
 		out = filter.NewProxtFilter(out, filter.Alive)
-		out = counter.NewProxyCounter("Alive", out, 10*time.Second)
-	}
-	for range out {
-		collected++
-		// fmt.Println(pr.UrlString())
-		if collected >= limit && limit != 0 {
-			fmt.Printf("Limit reached\n")
-			break
+
+		aliveCounter := counter.NewProxyCounter("Alive")
+		overallCounter = &aliveCounter
+		out = aliveCounter.Run(out)
+		if !silent {
+			go func() {
+				for {
+					time.Sleep(5 * time.Second)
+					aliveCounter.Print()
+				}
+			}()
 		}
 	}
-	fmt.Printf("Execution completed. %v proxy found\n", collected)
+
+	// if limit != 0 {
+	// 	go func() {
+	// 		for overallCounter.Count < limit {
+	// 		}
+	// 		fmt.Printf("Limit reached\n")
+	// 		close(done)
+	// 	}()
+	// }
+
+	if outputFile != "" {
+		writeToFile(outputFile, out)
+	} else {
+		for p := range out {
+			fmt.Println(p.UrlString())
+		}
+	}
+	fmt.Printf("Execution completed. %v proxy found\n", overallCounter.Count)
+}
+
+func writeToFile(filename string, in <-chan proxy.Proxy) {
+	f, err := os.Create(filename)
+	if err != nil {
+		fmt.Println(err)
+		f.Close()
+		return
+	}
+	for p := range in {
+		_, err := fmt.Fprintln(f, p.UrlString())
+		if err != nil {
+			log.Panic(err)
+			return
+		}
+	}
+	err = f.Close()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	// fmt.Println("file appended successfully")
 }
