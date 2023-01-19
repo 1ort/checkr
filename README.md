@@ -8,8 +8,8 @@ from source:
 To install from source, you need git and GO
 ```
 git clone https://github.com/1ort/checkr.git
-cd checkr
-go build .
+cd checkr/cmd/
+go build . -o checkr
 ```
 
 # Usage
