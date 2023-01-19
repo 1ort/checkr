@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"github.com/1ort/checkr/check"
+	"github.com/1ort/checkr/counter"
+	"github.com/1ort/checkr/filter"
 	"github.com/1ort/checkr/provider"
 )
 
@@ -87,6 +89,7 @@ func main() {
 	done := make(chan int)
 	defer close(done)
 	out := p.Fetch(done)
+	out = counter.NewProxyCounter("Found", out, 10*time.Second)
 	if !noCheck {
 		checker := check.NewCheckerPool(
 			time.Duration(timeout)*time.Second,
@@ -94,13 +97,12 @@ func main() {
 			workers,
 		)
 		out = checker.Run(out)
+		out = filter.NewProxtFilter(out, filter.Alive)
+		out = counter.NewProxyCounter("Alive", out, 10*time.Second)
 	}
-	for pr := range out {
-		if !pr.IsAlive {
-			continue
-		}
+	for range out {
 		collected++
-		fmt.Println(pr.UrlString())
+		// fmt.Println(pr.UrlString())
 		if collected >= limit && limit != 0 {
 			fmt.Printf("Limit reached\n")
 			break
