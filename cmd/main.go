@@ -123,15 +123,6 @@ func main() {
 		}
 	}
 
-	// if limit != 0 {
-	// 	go func() {
-	// 		for overallCounter.Count < limit {
-	// 		}
-	// 		fmt.Printf("Limit reached\n")
-	// 		close(done)
-	// 	}()
-	// }
-
 	if outputFile != "" {
 		writeToFile(outputFile, out)
 	} else {
@@ -161,5 +152,4 @@ func writeToFile(filename string, in <-chan proxy.Proxy) {
 		fmt.Println(err)
 		return
 	}
-	// fmt.Println("file appended successfully")
 }
