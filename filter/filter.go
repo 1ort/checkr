@@ -8,7 +8,7 @@ type proxyFilter struct {
 	filters []ProxyFilterFunc
 }
 
-func NewProxtFilter(in <-chan proxy.Proxy, funcs ...ProxyFilterFunc) <-chan proxy.Proxy {
+func NewProxyFilter(in <-chan proxy.Proxy, funcs ...ProxyFilterFunc) <-chan proxy.Proxy {
 	if len(funcs) == 0 {
 		return in
 	}
@@ -29,6 +29,29 @@ func NewProxtFilter(in <-chan proxy.Proxy, funcs ...ProxyFilterFunc) <-chan prox
 
 func Alive(p proxy.Proxy) bool {
 	return p.IsAlive
+}
+
+func StrictCountryFilter(countryCode string) ProxyFilterFunc {
+	return func(p proxy.Proxy) bool {
+		if p.Geo == nil {
+			return false
+		}
+		return p.Geo.Country.IsoCode == countryCode
+	}
+}
+
+func OneOfCountryFilter(countryCodes ...string) ProxyFilterFunc {
+	return func(p proxy.Proxy) bool {
+		if p.Geo == nil {
+			return false
+		}
+		for _, cc := range countryCodes {
+			if p.Geo.Country.IsoCode == cc {
+				return true
+			}
+		}
+		return false
+	}
 }
 
 func (f *proxyFilter) check(p proxy.Proxy) bool {

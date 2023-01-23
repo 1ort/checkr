@@ -25,15 +25,35 @@ type Proxy struct {
 	Port    int
 	Type    ProxyType
 	IsAlive bool
+	Geo     *GeoInfo
 }
 
-// type ProxyGeo struct {
-// 	CountryISO string
-// 	Country    string
-// 	RegionIso  string
-// 	Region     string
-// 	City       string
-// }
+type GeoInfo struct {
+	Continent struct {
+		Code  string            `maxminddb:"code" json:"code"`
+		Names map[string]string `maxminddb:"names" json:"names"`
+	} `maxminddb:"continent" json:"continent"`
+	Country struct {
+		IsInEuropeanUnion bool              `maxminddb:"is_in_european_union" json:"is_in_european_union"`
+		IsoCode           string            `maxminddb:"iso_code" json:"iso_code"`
+		Names             map[string]string `maxminddb:"names" json:"names"`
+	} `maxminddb:"country" json:"country"`
+	Subdivisions []struct {
+		IsoCode string            `maxminddb:"iso_code" json:"iso_code"`
+		Names   map[string]string `maxminddb:"names" json:"names"`
+	} `maxminddb:"subdivisions" json:"subdivisions"`
+	City struct {
+		Names map[string]string `maxminddb:"names" json:"names"`
+	} `maxminddb:"city" json:"city"`
+	Postal struct {
+		Code string `maxminddb:"code" json:"code"`
+	} `maxminddb:"postal" json:"postal"`
+	Location struct {
+		Latitude  float64 `maxminddb:"latitude" json:"latitude"`
+		Longitude float64 `maxminddb:"longitude" json:"longitude"`
+		TimeZone  string  `maxminddb:"time_zone" json:"time_zone"`
+	} `maxminddb:"location" json:"location"`
+}
 
 func (p *Proxy) HostPortString() string {
 	return p.Host + ":" + strconv.Itoa(p.Port)
@@ -84,8 +104,8 @@ func (p *Proxy) Transport() (*http.Transport, error) {
 	switch p.Type {
 	case TypeHTTP:
 		return p.httpTransport()
-	case TypeHTTPS:
-		return p.httpsTransport()
+	// case TypeHTTPS:
+	// 	return p.httpsTransport()
 	case TypeSOCKS4, TypeSOCKS4A, TypeSOCKS5:
 		return p.socksTransport()
 	default:

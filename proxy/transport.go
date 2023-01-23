@@ -26,14 +26,14 @@ func (p *Proxy) httpTransport() (*http.Transport, error) {
 	return transport, nil
 }
 
-func (p *Proxy) httpsTransport() (*http.Transport, error) {
-	proxyURL, err := url.Parse(p.UrlString())
-	if err != nil {
-		return nil, ErrInvalidHostPort
-	}
-	transport := &http.Transport{
-		Proxy: http.ProxyURL(proxyURL),
-		// TLSClientConfig: &tls.Config{},
-	}
-	return transport, nil
-}
+// func (p *Proxy) httpsTransport() (*http.Transport, error) {
+// 	proxyURL, err := url.Parse(p.UrlString())
+// 	if err != nil {
+// 		return nil, ErrInvalidHostPort
+// 	}
+// 	transport := &http.Transport{
+// 		Proxy: http.ProxyURL(proxyURL),
+// 		// TLSClientConfig: &tls.Config{},
+// 	}
+// 	return transport, nil
+// }

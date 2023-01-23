@@ -14,14 +14,11 @@ import (
 
 var defaultReqAddr = "api.ip.sb/ip"
 
-// var defaultGeoReqAddr = "api.ip.sb/geoip"
-
 type checkerPool struct {
 	in           <-chan proxy.Proxy
 	out          chan<- proxy.Proxy
 	reqAddr      string
 	timeout      time.Duration
-	needcheckGeo bool
 	workers      int
 }
 
@@ -29,13 +26,12 @@ type ProxyChecker interface {
 	Run(<-chan proxy.Proxy) <-chan proxy.Proxy
 }
 
-func NewCheckerPool(timeout time.Duration, checkGeo bool, workers int) ProxyChecker {
+func NewCheckerPool(timeout time.Duration, workers int) ProxyChecker {
 	return &checkerPool{
 		nil,
 		nil,
 		defaultReqAddr,
 		timeout,
-		false,
 		workers,
 	}
 }
