@@ -1,3 +1,5 @@
+## Attention! The project is at the initial stage of development, so there may be changes that break backward compatibility
+
 # Checkr - Blazing fast proxy checker
 
 ![изображение](https://user-images.githubusercontent.com/83316072/213428651-a98dd5d9-3000-49c0-a637-d3e3b66021a4.png)
