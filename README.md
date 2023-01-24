@@ -11,7 +11,7 @@ To install from source, you need git and GO
 ```
 git clone https://github.com/1ort/checkr.git
 cd checkr/cmd/
-go build . -o checkr
+go build ./checkr -o checkr
 ```
 
 # Usage
