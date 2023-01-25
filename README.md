@@ -11,17 +11,21 @@ To install from source, you need git and GO
 ```
 git clone https://github.com/1ort/checkr.git
 cd checkr/cmd/
-go build . -o checkr
+go build ./checkr -o checkr
 ```
 
 # Usage
-`checkr -file unchecked.txt -url https://www.proxy-list.download/api/v1/get?type=http -type http -o checked.txt`
+`checkr -file unchecked.txt -url https://www.proxy-list.download/api/v1/get?type=http -type http -o checked.txt -country USA`
 
 If proxy sources are not specified, checkr will collect proxies from public lists
 
 ```
+  -country value
+        Filter proxies by country IsoCode. You can specify multiple
   -file value
         Proxy list file. You can specify multiple (-file 1.txt -file 2.txt ... -file n.txt)
+  -mmKey string
+        MaxMind License key to download and update GeoLite2-City db.
   -nocheck
         Do not check proxy
   -o string
@@ -43,6 +47,19 @@ Input format: `host:port`
 
 Output format: `schema://host:port` where `schema` can be `socks5/socks4/http`
 
+## IPGeo Data
+
+The application takes IP geolocation data from the GeoLite2-City database provided by MaxMind. To use an up-to-date database, you need to specify the License Key as the --mmKey flag.
+
+`checkr -country US -mmKey xxxxxxxxxxxxxxxx`
+
+You can get the license key after creating an account for free at this link: https://www.maxmind.com/en/accounts/current/license-key
+
+You do not need to specify the key as a flag each time, since the database file is saved to the mmdb folder next to the executable file.
+Each time you use -mmKey, the local database is checked for relevance and the newest version is downloaded.
+
+It is recommended to update the geo base at least once a week
+
 ## Notes
 If you do not specify the proxy format, or select all, the check speed will be much slower, since each proxy will be checked for compliance with each protocol. Since the server can support different protocols on the same port, these proxies will be recorded separately. For example:
 ```
@@ -53,7 +70,7 @@ http://151.151.151.151:123
 
 # TODO
 
-1) Support proxy with authentication
-2) Checking proxy by geo
-3) built-in server with rotation
-4) saving the proxy to the database
+- [ ] Support proxy with authentication
+- [x] Checking proxy by geo
+- [ ] built-in server with rotation
+- [ ] saving the proxy to the database
