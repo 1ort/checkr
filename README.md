@@ -14,6 +14,13 @@ cd checkr/cmd/
 go build ./checkr -o checkr
 ```
 
+via go install:
+```
+go install github.com/1ort/checkr
+```
+or download precompiled binary:
+https://github.com/1ort/checkr/releases
+
 # Usage
 `checkr -file unchecked.txt -url https://www.proxy-list.download/api/v1/get?type=http -type http -o checked.txt -country USA`
 
