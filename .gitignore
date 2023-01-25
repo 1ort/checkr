@@ -17,3 +17,5 @@
 
 .fleet
 *.mmdb
+*.rar
+cmd/geo

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -108,15 +109,21 @@ func main() {
 			r   *maxminddb.Reader
 			err error
 		)
+		exPath, err := os.Executable()
+		if err != nil {
+			panic(err)
+		}
+		exDir := filepath.Dir(exPath)
+		mmdbDir := filepath.Join(exDir, "mmdb/")
 		if mmKey != "" {
-			downloader := mmdb.NewDownloader(mmKey, "./mmdb/")
+			downloader := mmdb.NewDownloader(mmKey, mmdbDir)
 			downloader.Verbose = !silent
 			r, err = downloader.Latest("GeoLite2-City")
 			if err != nil {
 				panic(err)
 			}
 		} else {
-			r, err = mmdb.OpenLocal("./mmdb/", "GeoLite2-City")
+			r, err = mmdb.OpenLocal(mmdbDir, "GeoLite2-City")
 			if err != nil {
 				panic(err)
 			}
